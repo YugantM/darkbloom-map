@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Darkbloom Profitability Map – Electricity Prices</title>
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 8px;
+    }
+    
+    .subtitle {
+      color: #94a3b8;
+      font-size: 1.05rem;
+      max-width: 640px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    
+    .map-card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      border: 1px solid #334155;
+    }
+    
+    #map {
+      width: 100%;
+      height: 520px;
+    }
+    
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+    }
+    
+    .info {
+      margin-top: 32px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    
+    .info-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    
+    .info-card h3 {
+      font-size: 1rem;
+      color: #38bdf8;
+      margin-bottom: 10px;
+    }
+    
+    .info-card p, .info-card ul {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+    
+    .info-card ul {
+      padding-left: 18px;
+    }
+    
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Darkbloom Electricity Advantage Map</h1>
+      <p class="subtitle">
+        Residential electricity prices (USD/kWh). Lower prices = higher net profit when running a Mac as a Darkbloom provider.
+      </p>
+    </header>
+
+    <div class="map-card">
+      <div id="map"></div>
+      
+      <div class="legend">
+        <div class="legend-item">
+          <div class="swatch" style="background:#16a34a"></div>
+          <span>&lt; $0.08 (Excellent)</span>
+        </div>
+        <div class="legend-item">
+          <div class="swatch" style="background:#84cc16"></div>
+          <span>$0.08 – $0.15 (Very Good)</span>
+        </div>
+        <div class="legend-item">
+          <div class="swatch" style="background:#eab308"></div>
+          <span>$0.15 – $0.25 (Average)</span>
+        </div>
+        <div class="legend-item">
+          <div class="swatch" style="background:#f97316"></div>
+          <span>$0.25 – $0.35 (Expensive)</span>
+        </div>
+        <div class="legend-item">
+          <div class="swatch" style="background:#ef4444"></div>
+          <span>&gt; $0.35 (Poor)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info">
+      <div class="info-card">
+        <h3>Best Advantage Zones</h3>
+        <ul>
+          <li>Canada (Quebec / Manitoba) & Norway – cheap hydro + excellent infrastructure</li>
+          <li>Turkey, China, India, Russia – very low rates</li>
+          <li>Gulf countries (Qatar, Kuwait, Oman) – heavily subsidised</li>
+          <li>Some US states (WA, ID, LA) – competitive rates</li>
+        </ul>
+      </div>
+      
+      <div class="info-card">
+        <h3>Highest Cost Zones</h3>
+        <ul>
+          <li>Ireland, Germany, Belgium, Italy, UK – $0.40+</li>
+          <li>Most of Western Europe and Australia</li>
+          <li>Island nations (Bermuda, Cayman, etc.)</li>
+        </ul>
+      </div>
+      
+      <div class="info-card">
+        <h3>Impact on Darkbloom</h3>
+        <p>
+          At ~15–30 W average draw, monthly power cost ranges from under $1 in the cheapest countries to $8–10 in the most expensive ones. 
+          On a $40–50 gross month, that difference is meaningful.
+        </p>
+      </div>
+    </div>
+
+    <footer>
+      Data approximated from 2025–2026 residential averages (GlobalPetrolPrices, Eurostat, EIA). Hover over countries for exact values.
+    </footer>
+  </div>
+
+  <script>
+    google.charts.load('current', { packages: ['geochart'] });
+    google.charts.setOnLoadCallback(drawMap);
+
+    function drawMap() {
+      const data = google.visualization.arrayToDataTable([
+        ['Country', 'Price (USD/kWh)', { role: 'tooltip' }],
+        // Very cheap
+        ['Ethiopia', 0.006, 'Ethiopia: $0.006 – Extremely cheap'],
+        ['Iran', 0.01, 'Iran: ~$0.01 – Heavily subsidised'],
+        ['Egypt', 0.04, 'Egypt: ~$0.04'],
+        ['Qatar', 0.03, 'Qatar: ~$0.03'],
+        ['Kuwait', 0.03, 'Kuwait: ~$0.03'],
+        ['Oman', 0.03, 'Oman: ~$0.03'],
+        ['Turkey', 0.07, 'Turkey: ~$0.07'],
+        ['Russia', 0.07, 'Russia: ~$0.07'],
+        ['China', 0.08, 'China: ~$0.08'],
+        ['India', 0.08, 'India: ~$0.08'],
+        ['Saudi Arabia', 0.05, 'Saudi Arabia: ~$0.05'],
+        ['United Arab Emirates', 0.08, 'UAE: ~$0.08'],
+        
+        // Cheap / Good
+        ['Canada', 0.12, 'Canada: ~$0.12 (Quebec/Manitoba even lower)'],
+        ['Norway', 0.15, 'Norway: ~$0.15 (hydro advantage)'],
+        ['United States', 0.18, 'United States: ~$0.18 national avg (varies by state)'],
+        ['Brazil', 0.16, 'Brazil: ~$0.16'],
+        ['Mexico', 0.11, 'Mexico: ~$0.11'],
+        ['Argentina', 0.08, 'Argentina: ~$0.08'],
+        ['South Africa', 0.20, 'South Africa: ~$0.20'],
+        ['Indonesia', 0.09, 'Indonesia: ~$0.09'],
+        ['Vietnam', 0.08, 'Vietnam: ~$0.08'],
+        ['Thailand', 0.12, 'Thailand: ~$0.12'],
+        
+        // Average
+        ['Japan', 0.21, 'Japan: ~$0.21'],
+        ['South Korea', 0.13, 'South Korea: ~$0.13'],
+        ['Australia', 0.26, 'Australia: ~$0.26'],
+        ['New Zealand', 0.24, 'New Zealand: ~$0.24'],
+        ['France', 0.28, 'France: ~$0.28'],
+        ['Spain', 0.28, 'Spain: ~$0.28'],
+        ['Portugal', 0.27, 'Portugal: ~$0.27'],
+        ['Poland', 0.30, 'Poland: ~$0.30'],
+        ['Sweden', 0.28, 'Sweden: ~$0.28'],
+        ['Finland', 0.26, 'Finland: ~$0.26'],
+        
+        // Expensive
+        ['United Kingdom', 0.40, 'United Kingdom: ~$0.40'],
+        ['Netherlands', 0.30, 'Netherlands: ~$0.30'],
+        ['Switzerland', 0.37, 'Switzerland: ~$0.37'],
+        ['Austria', 0.35, 'Austria: ~$0.35'],
+        ['Czech Republic', 0.35, 'Czechia: ~$0.35'],
+        ['Denmark', 0.36, 'Denmark: ~$0.36'],
+        
+        // Very expensive
+        ['Germany', 0.41, 'Germany: ~$0.41'],
+        ['Belgium', 0.40, 'Belgium: ~$0.40'],
+        ['Italy', 0.41, 'Italy: ~$0.41'],
+        ['Ireland', 0.45, 'Ireland: ~$0.45'],
+        ['Bermuda', 0.46, 'Bermuda: ~$0.46']
+      ]);
+
+      const options = {
+        colorAxis: {
+          colors: ['#16a34a', '#84cc16', '#eab308', '#f97316', '#ef4444'],
+          minValue: 0.00,
+          maxValue: 0.47
+        },
+        backgroundColor: '#1e293b',
+        datalessRegionColor: '#334155',
+        defaultColor: '#475569',
+        legend: 'none',
+        tooltip: { isHtml: false },
+        keepAspectRatio: true
+      };
+
+      const chart = new google.visualization.GeoChart(document.getElementById('map'));
+      chart.draw(data, options);
+    }
+
+    // Redraw on resize
+    window.addEventListener('resize', () => {
+      if (window.google && google.visualization) {
+        drawMap();
+      }
+    });
+  </script>
+</body>
+</html>
